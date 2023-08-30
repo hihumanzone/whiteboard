@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 85vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        #myCanvas {
+            border: 2px solid black;
+            touch-action: none;
+            background-color: #fff;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <canvas id="myCanvas" width="500" height="500"></canvas><br>
+    <div class="buttons">
+        Color: <input type="color" id="colorPicker" value="#000000">
+        <button id="clear">Reset</button>
+        <button id="saveAsPng">Save As PNG</button>
+        <button id="saveProgress">Save Progress</button>
+        <button id="undo">Undo</button>
+        <button id="redo">Redo</button>
+        Brush size: <input type="range" id="brushSize" min="0" max="50" value="5">
+        <input type="number" id="brushSizeNum" min="0" max="50" value="5">
+    </div>
+</div>
+
+<script>
+window.addEventListener('load', () => {
+    const canvas = document.getElementById('myCanvas');
+    const context = canvas.getContext('2d');
+    const clearBtn = document.getElementById('clear');
+    const colorPicker = document.getElementById('colorPicker');
+    const saveAsPngBtn = document.getElementById('saveAsPng');
+    const saveProgressBtn = document.getElementById('saveProgress');
+    const undoBtn = document.getElementById('undo');
+    const redoBtn = document.getElementById('redo');
+    const brushSize = document.getElementById('brushSize');
+    const brushSizeNum = document.getElementById('brushSizeNum');
+    const history = [];
+    let index = -1;
+
+    let drawing = false;
+
+    // Resize the canvas to fit the screen
+    const resizeCanvas = () => {
+        canvas.width = window.innerWidth * 0.95;
+        canvas.height = window.innerHeight * 0.8;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    canvas.addEventListener('mousedown', (e) => {
+        drawing = true;
+        draw(e.clientX - canvas.offsetLeft, 
+             e.clientY - canvas.offsetTop);
+    });
+    canvas.addEventListener('mousemove', (e) => {
+        if (!drawing) return;
+        draw(e.clientX - canvas.offsetLeft, 
+             e.clientY - canvas.offsetTop);
+    });
+    canvas.addEventListener('mouseup', stop);
+    canvas.addEventListener('mouseout', stop);
+
+    canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        drawing = true;
+        const touch = e.touches[0];
+        draw(touch.clientX - canvas.offsetLeft, 
+             touch.clientY - canvas.offsetTop);
+    });
+    canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (!drawing) return;
+        const touch = e.touches[0];
+        draw(touch.clientX - canvas.offsetLeft, 
+             touch.clientY - canvas.offsetTop);
+    });
+    canvas.addEventListener('touchend', stop);
+    canvas.addEventListener('touchcancel', stop);
+
+    clearBtn.addEventListener('click', () => {
+        if (confirm('Are you sure you want to reset the drawing? This cannot be undone.')) {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            history.length = 0;
+            index = -1;
+        }
+    });
+
+    saveAsPngBtn.addEventListener('click', () => {
+        const dataUrl = canvas.toDataURL('image/png');
+        const newTab = window.open();
+        newTab.document.write('<img src="' + dataUrl + '" alt="Canvas Image"/>');
+    });
+
+    saveProgressBtn.addEventListener('click', () => {
+        const imgData = canvas.toDataURL();
+        localStorage.setItem('drawing', imgData);
+        alert('Your progress has been saved.');
+    });
+
+    undoBtn.addEventListener('click', () => {
+        if(index <= 0) return;
+        index--;
+        let imgData = history[index];
+        let image = new Image();
+        image.src = imgData;
+        image.onload = function() {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.drawImage(image, 0, 0, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
+        }
+    });
+
+    redoBtn.addEventListener('click', () => {
+        if(index >= history.length - 1) return;
+        index++;
+        let imgData = history[index];
+        let image = new Image();
+        image.src = imgData;
+        image.onload = function() {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.drawImage(image, 0, 0, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
+        }
+    });
+
+    brushSize.addEventListener('input', function() {
+        brushSizeNum.value = brushSize.value;
+    })
+
+    brushSizeNum.addEventListener('input', function() {
+        if(brushSizeNum.value > 50 || brushSizeNum.value < 0) {
+            alert('Invalid brush size. Please enter a size between 0 and 50.');
+            brushSizeNum.value = brushSize.value;
+        } else {
+            brushSize.value = brushSizeNum.value;
+        }
+    });
+
+    function draw (x, y) {
+        context.lineWidth = brushSize.value;
+        context.lineCap = 'round';
+        context.strokeStyle = colorPicker.value;
+
+        context.lineTo(x, y);
+        context.stroke();
+        context.beginPath();
+        context.moveTo(x, y);
+    }
+
+    function stop () {
+        drawing = false;
+        context.beginPath();
+        let imgData = canvas.toDataURL();
+        history.push(imgData);
+        index++;
+    }
+
+    // Load the saved drawing from local storage.
+    const savedDrawing = localStorage.getItem('drawing');
+    if (savedDrawing) {
+        const img = new Image();
+        img.src = savedDrawing;
+        img.onload = () => {
+            context.drawImage(img, 0, 0);
+            history.push(savedDrawing);
+            index = 0;
+        };
+    }
+});
+</script>
+</body>
+</html>
