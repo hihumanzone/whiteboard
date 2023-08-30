@@ -17,7 +17,6 @@
         #myCanvas {
             border: 2px solid black;
             touch-action: none;
-            background-color: #fff;
         }
         .container {
             display: flex;
@@ -30,12 +29,16 @@
             gap: 10px;
             margin-bottom: 20px;
         }
+        .separator {
+            margin: 20px 0;
+            border-top: 1px solid #000;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <canvas id="myCanvas" width="500" height="500"></canvas><br>
     <div class="buttons">
         Pen Color: <input type="color" id="colorPicker" value="#000000">
         Background Color: <input type="color" id="bgColorPicker" value="#ffffff">
@@ -47,6 +50,8 @@
         Brush size: <input type="range" id="brushSize" min="0" max="50" value="5">
         <input type="number" id="brushSizeNum" min="0" max="50" value="5">
     </div>
+    <div class="separator"></div>
+    <canvas id="myCanvas" width="500" height="500">Your browser does not support HTML5 canvas.</canvas>
 </div>
 
 <script>
@@ -67,6 +72,9 @@ window.addEventListener('load', () => {
 
     let drawing = false;
 
+    context.fillStyle = bgColorPicker.value;
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
     // Resize the canvas to fit the screen
     const resizeCanvas = () => {
         canvas.width = window.innerWidth * 0.95;
@@ -82,39 +90,11 @@ window.addEventListener('load', () => {
         context.fillRect(0, 0, canvas.width, canvas.height);
     });
 
-    canvas.addEventListener('mousedown', (e) => {
-        drawing = true;
-        draw(e.clientX - canvas.offsetLeft, 
-             e.clientY - canvas.offsetTop);
-    });
-    canvas.addEventListener('mousemove', (e) => {
-        if (!drawing) return;
-        draw(e.clientX - canvas.offsetLeft, 
-             e.clientY - canvas.offsetTop);
-    });
-    canvas.addEventListener('mouseup', stop);
-    canvas.addEventListener('mouseout', stop);
-
-    canvas.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        drawing = true;
-        const touch = e.touches[0];
-        draw(touch.clientX - canvas.offsetLeft, 
-             touch.clientY - canvas.offsetTop);
-    });
-    canvas.addEventListener('touchmove', (e) => {
-        e.preventDefault();
-        if (!drawing) return;
-        const touch = e.touches[0];
-        draw(touch.clientX - canvas.offsetLeft, 
-             touch.clientY - canvas.offsetTop);
-    });
-    canvas.addEventListener('touchend', stop);
-    canvas.addEventListener('touchcancel', stop);
-
     clearBtn.addEventListener('click', () => {
         if (confirm('Are you sure you want to reset the drawing? This cannot be undone.')) {
+            context.fillStyle = bgColorPicker.value;
             context.clearRect(0, 0, canvas.width, canvas.height);
+            context.fillRect(0, 0, canvas.width, canvas.height);
             history.length = 0;
             index = -1;
         }
@@ -122,13 +102,16 @@ window.addEventListener('load', () => {
 
     saveAsPngBtn.addEventListener('click', () => {
         const dataUrl = canvas.toDataURL('image/png');
-        const newTab = window.open();
-        newTab.document.write('<img src="' + dataUrl + '" alt="Canvas Image"/>');
+        const link = document.createElement('a');
+        link.download = 'canvas.png';
+        link.href = dataUrl;
+        link.click();
     });
 
     saveProgressBtn.addEventListener('click', () => {
         const imgData = canvas.toDataURL();
         localStorage.setItem('drawing', imgData);
+        localStorage.setItem('bgColor', bgColorPicker.value);
         alert('Your progress has been saved.');
     });
 
@@ -190,6 +173,12 @@ window.addEventListener('load', () => {
 
     // Load the saved drawing from local storage.
     const savedDrawing = localStorage.getItem('drawing');
+    const savedBgColor = localStorage.getItem('bgColor');
+    if (savedBgColor) {
+        context.fillStyle = savedBgColor;
+        bgColorPicker.value = savedBgColor;
+        context.fillRect(0, 0, canvas.width, canvas.height);
+    }
     if (savedDrawing) {
         const img = new Image();
         img.src = savedDrawing;
