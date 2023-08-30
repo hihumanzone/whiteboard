@@ -88,7 +88,7 @@ window.addEventListener('load', () => {
         draw(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
     });
     canvas.addEventListener('mousemove', (e) => {
-        if (!drawing) return;
+        if(!drawing) return;
         draw(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
     });
     canvas.addEventListener('mouseup', stop);
@@ -102,7 +102,7 @@ window.addEventListener('load', () => {
     });
     canvas.addEventListener('touchmove', (e) => {
         e.preventDefault();
-        if (!drawing) return;
+        if(!drawing) return;
         const touch = e.touches[0];
         draw(touch.clientX - canvas.offsetLeft, touch.clientY - canvas.offsetTop);
     });
@@ -110,9 +110,10 @@ window.addEventListener('load', () => {
     canvas.addEventListener('touchcancel', stop);
 
     clearBtn.addEventListener('click', () => {
-        if (confirm('Are you sure you want to reset the drawing? This cannot be undone.')) {
+        if(confirm('Are you sure you want to reset the drawing? This cannot be undone.')) {
             context.clearRect(0, 0, canvas.width, canvas.height);
-            canvas.style.backgroundColor = "#ffffff"; // reset background colour
+            backgroundColorPicker.value = "#ffffff";
+            canvas.style.backgroundColor = "#ffffff";
             history.length = 0;
             index = -1;
         }
@@ -128,7 +129,7 @@ window.addEventListener('load', () => {
 
     saveProgressBtn.addEventListener('click', () => {
         const imgData = canvas.toDataURL();
-        const bgColor = canvas.style.backgroundColor;
+        const bgColor = backgroundColorPicker.value;
         const penColor = colorPicker.value;
         const brush_Size= brushSize.value;
         localStorage.setItem('drawing', imgData);
@@ -206,14 +207,16 @@ window.addEventListener('load', () => {
     const savedBgColor = localStorage.getItem('backgroundColor');
     const savedPenColor = localStorage.getItem('penColor');
     const savedBrushSize = localStorage.getItem('brushSize');
-    if (savedDrawing) {
+    if(savedDrawing) {
         const img = new Image();
         img.src = savedDrawing;
+        backgroundColorPicker.value = savedBgColor;
         canvas.style.backgroundColor = savedBgColor;
         colorPicker.value = savedPenColor;
         brushSize.value = savedBrushSize;
         brushSizeNum.value = savedBrushSize;
-        img.onload = () => {
+        img.onload = function() {
+            context.clearRect(0, 0, canvas.width, canvas.height);
             context.drawImage(img, 0, 0);
             history.push(savedDrawing);
             index = 0;
