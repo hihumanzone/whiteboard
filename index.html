@@ -29,13 +29,19 @@
             justify-content: center;
             gap: 10px;
             margin-bottom: 20px;
+            border-bottom: 1px solid gray;
+        }
+        .buttons > * {
+            border-right: 1px solid gray;
+            padding-right: 5px;
+        }
+        .buttons > *:last-child {
+            border-right: none;
         }
     </style>
 </head>
 <body>
-
 <div class="container">
-    <canvas id="myCanvas" width="500" height="500"></canvas><br>
     <div class="buttons">
         Color: <input type="color" id="colorPicker" value="#000000">
         <button id="clear">Reset</button>
@@ -46,8 +52,8 @@
         Brush size: <input type="range" id="brushSize" min="0" max="50" value="5">
         <input type="number" id="brushSizeNum" min="0" max="50" value="5">
     </div>
+    <canvas id="myCanvas" width="500" height="500"></canvas><br>
 </div>
-
 <script>
 window.addEventListener('load', () => {
     const canvas = document.getElementById('myCanvas');
