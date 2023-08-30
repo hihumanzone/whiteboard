@@ -2,173 +2,205 @@
 <html>
 <head>
     <style>
-      * {
-        box-sizing: border-box;
-        padding: 0;
-        margin: 0;
-      }
-      body {
-        height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background: #f7f7f7;
-        font-family: sans-serif;
-      }
-      .app {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: space-between;
-      }
-      #myCanvas {
-        border: 2px solid black;
-        background: #fff;
-        touch-action: none;
-        margin-bottom: 20px;
-      }
-      .controls {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
-        margin-bottom: 10px;
-      }
-      .controls button, .controls input[type="color"], .controls input[type="number"] {
-        cursor: pointer;
-        margin: 0 10px;
-        padding: 4px 8px;
-      }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        #myCanvas {
+            border: 1px solid black;
+            margin-bottom: 20px;
+        }
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
-<div class="app">
-    <div class="controls">
-        <span>
-            Brush Color: <input type="color" id="colorPicker" value="#000000">
-        </span>
-        <span>
-            BG Color: <input type="color" id="bgColorPicker" value="#ffffff">
-        </span>
-        <span>
-            Brush Size: <input type="range" id="brushSize" min="1" max="50" value="5"> <input type="number" id="brushSizeNum" min="1" max="50" value="5">
-        </span>
-    </div>
-    <div class="controls">
+
+<div class="container">
+    <div class="toolbar">
+        Brush Color: <input type="color" id="colorPicker" value="#000000">
+        Background Color: <input type="color" id="backgroundColorPicker" value="#FFFFFF">
         <button id="clear">Reset</button>
         <button id="saveAsPng">Save As PNG</button>
         <button id="saveProgress">Save Progress</button>
         <button id="undo">Undo</button>
         <button id="redo">Redo</button>
+        Brush Size: <input type="range" id="brushSize" min="1" max="50" value="5">
+        <input type="number" id="brushSizeNum" min="1" max="50" value="5">
     </div>
-    <canvas id="myCanvas" width="800" height="500"></canvas><br>
+  <canvas id="myCanvas" width="500" height="500"></canvas>
 </div>
 
 <script>
 window.addEventListener('load', () => {
     const canvas = document.getElementById('myCanvas');
-    const context = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d');
     const clearBtn = document.getElementById('clear');
     const colorPicker = document.getElementById('colorPicker');
+    const bgColorPicker = document.getElementById('backgroundColorPicker');
     const saveAsPngBtn = document.getElementById('saveAsPng');
     const saveProgressBtn = document.getElementById('saveProgress');
     const undoBtn = document.getElementById('undo');
     const redoBtn = document.getElementById('redo');
-    const bgColorPicker = document.getElementById('bgColorPicker');
     const brushSize = document.getElementById('brushSize');
     const brushSizeNum = document.getElementById('brushSizeNum');
-    const history = [];
+    let history = [];
     let index = -1;
+
     let drawing = false;
-    let bgColor = '#ffffff';
 
-    // Resize the canvas to fit the screen
+    /**
+    * Resizes the canvas to fit the viewport
+    */
     const resizeCanvas = () => {
-        canvas.width = window.innerWidth * 0.95;
-        canvas.height = window.innerHeight * 0.8;
+        canvas.width = window.innerWidth * 0.8;
+        canvas.height = window.innerHeight * 0.6;
     }
-    resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
 
-    canvas.addEventListener('mousedown', (e) => {
-        drawing = true;
-        draw(e.clientX - canvas.offsetLeft, 
-             e.clientY - canvas.offsetTop);
+    /*
+    * Defines canvas background color
+    */
+    const loadCanvasBackground = () => {
+        const savedBackgroundColor = localStorage.getItem('backgroundColor')
+        if (savedBackgroundColor) {
+            bgColorPicker.value = savedBackgroundColor 
+            canvas.style.backgroundColor = savedBackgroundColor 
+        } else {
+            canvas.style.backgroundColor = bgColorPicker.value 
+        }
+    }
+    // Initiates canvas background color on page load
+    loadCanvasBackground();
+
+    /* 
+    * Listens for canvas background color change
+    */
+    bgColorPicker.addEventListener('change', function() {
+        canvas.style.backgroundColor = this.value 
     });
-    canvas.addEventListener('mousemove', (e) => {
-        if (!drawing) return;
-        draw(e.clientX - canvas.offsetLeft, 
-             e.clientY - canvas.offsetTop);
-    });
-    canvas.addEventListener('mouseup', stop);
-    canvas.addEventListener('mouseout', stop);
+
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDraw);
+    canvas.addEventListener('mouseout', stopDraw);
 
     canvas.addEventListener('touchstart', (e) => {
         e.preventDefault();
-        drawing = true;
-        const touch = e.touches[0];
-        draw(touch.clientX - canvas.offsetLeft, 
-             touch.clientY - canvas.offsetTop);
+        startDraw(e.touches[0]);
     });
     canvas.addEventListener('touchmove', (e) => {
         e.preventDefault();
-        if (!drawing) return;
-        const touch = e.touches[0];
-        draw(touch.clientX - canvas.offsetLeft, 
-             touch.clientY - canvas.offsetTop);
+        draw(e.touches[0]);
     });
-    canvas.addEventListener('touchend', stop);
-    canvas.addEventListener('touchcancel', stop);
+    canvas.addEventListener('touchend', stopDraw);
 
-    bgColorPicker.addEventListener('change', () => {
-        bgColor = bgColorPicker.value;
-        context.fillStyle = bgColor;
-        context.fillRect(0, 0, canvas.width, canvas.height);
+    clearBtn.addEventListener('click', clearCanvas);
+    saveAsPngBtn.addEventListener('click', saveAsPng);
+    saveProgressBtn.addEventListener('click', saveProgress);
+    undoBtn.addEventListener('click', undoLastAction);
+    redoBtn.addEventListener('click', redoLastAction);
+
+    brushSize.addEventListener('input', function() {
+        brushSizeNum.value = brushSize.value;
     });
 
-    clearBtn.addEventListener('click', () => {
-        if (confirm('Are you sure you want to reset the drawing? This cannot be undone.')) {
-            context.fillStyle = bgColor;
-            context.fillRect(0, 0, canvas.width, canvas.height);
-            history.length = 0;
-            index = -1;
+    brushSizeNum.addEventListener('input', function() {
+        if(brushSizeNum.value > 50 || brushSizeNum.value < 1) {
+            alert('Invalid brush size. Please enter a size between 1 and 50.');
+            brushSizeNum.value = brushSize.value;
+        } else {
+            brushSize.value = brushSizeNum.value;
         }
     });
 
-    saveProgressBtn.addEventListener('click', () => {
-        const data = {
-            img: canvas.toDataURL(),
-            bgColor: bgColor,
-        };
-        localStorage.setItem('drawing', JSON.stringify(data));
+    function startDraw(e) {
+        drawing = true;
+        draw(e);
+    }
+
+    function draw(e) {
+        if (!drawing) return;
+        ctx.lineWidth = brushSize.value;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = colorPicker.value;
+        ctx.lineTo(e.clientX - canvas.offsetLeft, 
+                    e.clientY - canvas.offsetTop);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(e.clientX - canvas.offsetLeft, 
+                    e.clientY - canvas.offsetTop);
+    }
+  
+    function stopDraw() {
+        if (!drawing) return;
+        drawing = false;
+        ctx.beginPath();
+        history.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+        index++;
+    }
+
+    function clearCanvas() {
+        if (confirm('Are you sure you want to clear the canvas? This cannot be undone.')) {
+            history.length = 0;
+            index = -1;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    }
+
+    function saveAsPng() {
+        const a = document.createElement('a');
+        document.body.appendChild(a);
+        a.href = canvas.toDataURL();
+        a.download = 'canvas-image.png';
+        a.click();
+        document.body.removeChild(a);
+    }
+
+    function saveProgress() {
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const jsonImgData = JSON.stringify(imgData);
+        localStorage.setItem('savedDrawing', jsonImgData);
+        localStorage.setItem('backgroundColor', bgColorPicker.value);
         alert('Your progress has been saved.');
-    });
+    }
 
-    saveAsPngBtn.addEventListener('click', () => {
-        const dataUrl = canvas.toDataURL('image/png');
-        const link = document.createElement('a');
-        link.href = dataUrl;
-        link.download = 'drawing.png';
-        link.click();
-    });
+    function undoLastAction() {
+        if(index <= 0) return;
+        index--;
+        ctx.putImageData(history[index], 0, 0);
+    }
 
-    // Load the data from local storage
-    const savedData = JSON.parse(localStorage.getItem('drawing'));
-    if (savedData) {
-        const img = new Image();
-        img.src = savedData.img;
-        img.onload = () => {
-            context.fillStyle = savedData.bgColor;
-            context.fillRect(0, 0, canvas.width, canvas.height);
-            context.drawImage(img, 0, 0);
-            history.push(savedData.img);
-            index = 0;
-        };
-        bgColor = savedData.bgColor;
-        bgColorPicker.value = savedData.bgColor;
-    } else {
-        context.fillStyle = bgColor;
-        context.fillRect(0, 0, canvas.width, canvas.height);
+    function redoLastAction() {
+        if(index >= history.length - 1) return;
+        index++;
+        ctx.putImageData(history[index], 0, 0);
+    }
+
+    const savedDrawing = localStorage.getItem('savedDrawing');
+    if (savedDrawing) {
+        const imgData = JSON.parse(savedDrawing);
+        let img = new Image();
+        imgData.data = Uint8ClampedArray.from(imgData.data);
+        let imageData = new ImageData(imgData.data, imgData.width, imgData.height);
+        ctx.putImageData(imageData, 0, 0);
+        history.push(imageData);
+        index = 0;
     }
 });
 </script>
