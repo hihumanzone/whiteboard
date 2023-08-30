@@ -88,7 +88,7 @@ window.addEventListener('load', () => {
         draw(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
     });
     canvas.addEventListener('mousemove', (e) => {
-        if(!drawing) return;
+        if (!drawing) return;
         draw(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
     });
     canvas.addEventListener('mouseup', stop);
@@ -102,7 +102,7 @@ window.addEventListener('load', () => {
     });
     canvas.addEventListener('touchmove', (e) => {
         e.preventDefault();
-        if(!drawing) return;
+        if (!drawing) return;
         const touch = e.touches[0];
         draw(touch.clientX - canvas.offsetLeft, touch.clientY - canvas.offsetTop);
     });
@@ -110,10 +110,13 @@ window.addEventListener('load', () => {
     canvas.addEventListener('touchcancel', stop);
 
     clearBtn.addEventListener('click', () => {
-        if(confirm('Are you sure you want to reset the drawing? This cannot be undone.')) {
+        if (confirm('Are you sure you want to reset the drawing? This cannot be undone.')) {
             context.clearRect(0, 0, canvas.width, canvas.height);
-            backgroundColorPicker.value = "#ffffff";
             canvas.style.backgroundColor = "#ffffff";
+            colorPicker.value = "#000000";
+            brushSize.value = "5";
+            brushSizeNum.value = "5";
+            backgroundColorPicker.value = "#ffffff";
             history.length = 0;
             index = -1;
         }
@@ -183,7 +186,7 @@ window.addEventListener('load', () => {
         }
     });
 
-    function draw (x, y) {
+    function draw(x, y) {
         context.lineWidth = brushSize.value;
         context.lineCap = 'round';
         context.strokeStyle = colorPicker.value;
@@ -194,10 +197,10 @@ window.addEventListener('load', () => {
         context.moveTo(x, y);
     }
 
-    function stop () {
+    function stop() {
         drawing = false;
         context.beginPath();
-        let imgData = canvas.toDataURL();
+        const imgData = canvas.toDataURL();
         history.push(imgData);
         index++;
     }
@@ -211,10 +214,10 @@ window.addEventListener('load', () => {
         const img = new Image();
         img.src = savedDrawing;
         backgroundColorPicker.value = savedBgColor;
-        canvas.style.backgroundColor = savedBgColor;
         colorPicker.value = savedPenColor;
         brushSize.value = savedBrushSize;
         brushSizeNum.value = savedBrushSize;
+        canvas.style.backgroundColor = savedBgColor;
         img.onload = function() {
             context.clearRect(0, 0, canvas.width, canvas.height);
             context.drawImage(img, 0, 0);
