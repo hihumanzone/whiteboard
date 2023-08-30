@@ -46,13 +46,13 @@
     <div class="buttons">
         Background Color: <input type="color" id="backgroundColorPicker" value="#ffffff">
         Color: <input type="color" id="colorPicker" value="#000000">
-        Brush size: <input type="range" id="brushSize" min="0" max="50" value="5">
-        <input type="number" id="brushSizeNum" min="0" max="50" value="5">
         <button id="clear">Reset</button>
         <button id="saveAsPng">Save As PNG</button>
         <button id="saveProgress">Save Progress</button>
         <button id="undo">Undo</button>
         <button id="redo">Redo</button>
+        Brush size: <input type="range" id="brushSize" min="0" max="50" value="5">
+        <input type="number" id="brushSizeNum" min="0" max="50" value="5">
     </div>
     <canvas id="myCanvas" width="500" height="500" style="background-color:#ffffff;"></canvas>
 </div>
@@ -75,6 +75,7 @@ window.addEventListener('load', () => {
 
     let drawing = false;
 
+    // Resize the canvas to fit the screen
     const resizeCanvas = () => {
         canvas.width = window.innerWidth * 0.95;
         canvas.height = window.innerHeight * 0.8;
@@ -86,12 +87,10 @@ window.addEventListener('load', () => {
         drawing = true;
         draw(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
     });
-
     canvas.addEventListener('mousemove', (e) => {
         if (!drawing) return;
         draw(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
     });
-
     canvas.addEventListener('mouseup', stop);
     canvas.addEventListener('mouseout', stop);
 
@@ -101,21 +100,19 @@ window.addEventListener('load', () => {
         const touch = e.touches[0];
         draw(touch.clientX - canvas.offsetLeft, touch.clientY - canvas.offsetTop);
     });
-
     canvas.addEventListener('touchmove', (e) => {
         e.preventDefault();
         if (!drawing) return;
         const touch = e.touches[0];
         draw(touch.clientX - canvas.offsetLeft, touch.clientY - canvas.offsetTop);
     });
-
     canvas.addEventListener('touchend', stop);
     canvas.addEventListener('touchcancel', stop);
 
     clearBtn.addEventListener('click', () => {
         if (confirm('Are you sure you want to reset the drawing? This cannot be undone.')) {
             context.clearRect(0, 0, canvas.width, canvas.height);
-            canvas.style.backgroundColor = "#ffffff"; 
+            canvas.style.backgroundColor = "#ffffff"; // reset background colour
             history.length = 0;
             index = -1;
         }
@@ -132,10 +129,12 @@ window.addEventListener('load', () => {
     saveProgressBtn.addEventListener('click', () => {
         const imgData = canvas.toDataURL();
         const bgColor = canvas.style.backgroundColor;
+        const penColor = colorPicker.value;
+        const brush_Size= brushSize.value;
         localStorage.setItem('drawing', imgData);
         localStorage.setItem('backgroundColor', bgColor);
-        localStorage.setItem('penColor', colorPicker.value);
-        localStorage.setItem('brushSize', brushSize.value);
+        localStorage.setItem('penColor', penColor);
+        localStorage.setItem('brushSize', brush_Size);
         alert('Your progress has been saved.');
     });
 
@@ -174,7 +173,6 @@ window.addEventListener('load', () => {
         brushSizeNum.value = brushSize.value;
     })
 
-
     brushSizeNum.addEventListener('input', function() {
         if(brushSizeNum.value > 50 || brushSizeNum.value < 0) {
             alert('Invalid brush size. Please enter a size between 0 and 50.');
@@ -203,15 +201,14 @@ window.addEventListener('load', () => {
         index++;
     }
 
+    // Load the saved drawing from local storage.
     const savedDrawing = localStorage.getItem('drawing');
     const savedBgColor = localStorage.getItem('backgroundColor');
     const savedPenColor = localStorage.getItem('penColor');
     const savedBrushSize = localStorage.getItem('brushSize');
-
     if (savedDrawing) {
         const img = new Image();
         img.src = savedDrawing;
-        backgroundColorPicker.value = savedBgColor;
         canvas.style.backgroundColor = savedBgColor;
         colorPicker.value = savedPenColor;
         brushSize.value = savedBrushSize;
