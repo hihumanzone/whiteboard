@@ -32,21 +32,32 @@
             border: 1px solid black;
             padding: 5px;
         }
+        
+        .values {
+            display: flex;
+            justify-content: center;
+            gap: 18px;
+            margin-bottom: 15px;
+            border: 1px solid black;
+            padding: 5px;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="buttons">
-        Background Color: <input type="color" id="backgroundColorPicker" value="#ffffff">
+    <div class="values">
         Color: <input type="color" id="colorPicker" value="#000000">
+        Background Color: <input type="color" id="backgroundColorPicker" value="#ffffff">
+        Brush size: <input type="range" id="brushSize" min="0" max="50" value="5">
+        <input type="number" id="brushSizeNum" min="0" max="50" value="5">
+    </div>
+    <div class="buttons">
         <button id="clear">Reset</button>
         <button id="saveAsPng">Save As PNG</button>
         <button id="saveProgress">Save Progress</button>
         <button id="undo">Undo</button>
         <button id="redo">Redo</button>
-        Brush size: <input type="range" id="brushSize" min="0" max="50" value="5">
-        <input type="number" id="brushSizeNum" min="0" max="50" value="5">
     </div>
     <canvas id="myCanvas" width="500" height="500" style="background-color:#ffffff;"></canvas>
 </div>
