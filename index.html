@@ -9,7 +9,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            height: 85vh;
             margin: 0;
             background-color: #f0f0f0;
             font-family: Arial, sans-serif;
@@ -17,6 +17,7 @@
         #myCanvas {
             border: 2px solid black;
             touch-action: none;
+            background-color: #fff;
         }
         .container {
             display: flex;
@@ -36,15 +37,15 @@
 <div class="container">
     <canvas id="myCanvas" width="500" height="500"></canvas><br>
     <div class="buttons">
-        Brush color: <input type="color" id="colorPicker" value="#000000">
-        Canvas background color: <input type="color" id="bgColorPicker" value="#ffffff">
+        Pen Color: <input type="color" id="colorPicker" value="#000000">
+        Background Color: <input type="color" id="bgColorPicker" value="#ffffff">
         <button id="clear">Reset</button>
         <button id="saveAsPng">Save As PNG</button>
         <button id="saveProgress">Save Progress</button>
         <button id="undo">Undo</button>
-        <button id="redo">Redo</button><br>
-        Brush size: <input type="range" id="brushSize" min="1" max="50" value="5">
-        <input type="number" id="brushSizeNum" min="1" max="50" value="5">
+        <button id="redo">Redo</button>
+        Brush size: <input type="range" id="brushSize" min="0" max="50" value="5">
+        <input type="number" id="brushSizeNum" min="0" max="50" value="5">
     </div>
 </div>
 
@@ -66,9 +67,19 @@ window.addEventListener('load', () => {
 
     let drawing = false;
 
-    // Set the background color
-    bgColorPicker.addEventListener('change', function () {
-        canvas.style.backgroundColor = bgColorPicker.value;
+    // Resize the canvas to fit the screen
+    const resizeCanvas = () => {
+        canvas.width = window.innerWidth * 0.95;
+        canvas.height = window.innerHeight * 0.8;
+        context.fillStyle = bgColorPicker.value;
+        context.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    bgColorPicker.addEventListener('input', () => {
+        context.fillStyle = bgColorPicker.value;
+        context.fillRect(0, 0, canvas.width, canvas.height);
     });
 
     canvas.addEventListener('mousedown', (e) => {
@@ -98,6 +109,8 @@ window.addEventListener('load', () => {
         draw(touch.clientX - canvas.offsetLeft, 
              touch.clientY - canvas.offsetTop);
     });
+    canvas.addEventListener('touchend', stop);
+    canvas.addEventListener('touchcancel', stop);
 
     clearBtn.addEventListener('click', () => {
         if (confirm('Are you sure you want to reset the drawing? This cannot be undone.')) {
@@ -109,10 +122,8 @@ window.addEventListener('load', () => {
 
     saveAsPngBtn.addEventListener('click', () => {
         const dataUrl = canvas.toDataURL('image/png');
-        const link = document.createElement('a');
-        link.href = dataUrl;
-        link.download = 'canvas.png';
-        link.click();
+        const newTab = window.open();
+        newTab.document.write('<img src="' + dataUrl + '" alt="Canvas Image"/>');
     });
 
     saveProgressBtn.addEventListener('click', () => {
@@ -133,13 +144,25 @@ window.addEventListener('load', () => {
         }
     });
 
+    redoBtn.addEventListener('click', () => {
+        if(index >= history.length - 1) return;
+        index++;
+        let imgData = history[index];
+        let image = new Image();
+        image.src = imgData;
+        image.onload = function() {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.drawImage(image, 0, 0, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
+        }
+    });
+
     brushSize.addEventListener('input', function() {
         brushSizeNum.value = brushSize.value;
     })
 
     brushSizeNum.addEventListener('input', function() {
-        if(brushSizeNum.value > 50 || brushSizeNum.value < 1) {
-            alert('Invalid brush size. Please enter a size between 1 and 50.');
+        if(brushSizeNum.value > 50 || brushSizeNum.value < 0) {
+            alert('Invalid brush size. Please enter a size between 0 and 50.');
             brushSizeNum.value = brushSize.value;
         } else {
             brushSize.value = brushSizeNum.value;
@@ -150,7 +173,7 @@ window.addEventListener('load', () => {
         context.lineWidth = brushSize.value;
         context.lineCap = 'round';
         context.strokeStyle = colorPicker.value;
-    
+
         context.lineTo(x, y);
         context.stroke();
         context.beginPath();
