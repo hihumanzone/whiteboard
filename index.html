@@ -19,6 +19,11 @@
             touch-action: none;
             background-color: #fff;
         }
+        .buttons div:not(:last-child) {
+            border-right: 1px solid;
+            padding-right: 10px;
+            margin-right: 10px;
+        }
         .container {
             display: flex;
             flex-direction: column;
@@ -28,22 +33,18 @@
             display: flex;
             justify-content: center;
             gap: 10px;
-            margin-bottom: 20px;
-            border-bottom: 1px solid gray;
-        }
-        .buttons > * {
-            border-right: 1px solid gray;
-            padding-right: 5px;
-        }
-        .buttons > *:last-child {
-            border-right: none;
+            border-bottom: 1px solid;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
         }
     </style>
 </head>
 <body>
+
 <div class="container">
     <div class="buttons">
         Color: <input type="color" id="colorPicker" value="#000000">
+        Background Color: <input type="color" id="bgColorPicker" value="#ffffff">
         <button id="clear">Reset</button>
         <button id="saveAsPng">Save As PNG</button>
         <button id="saveProgress">Save Progress</button>
@@ -52,14 +53,16 @@
         Brush size: <input type="range" id="brushSize" min="0" max="50" value="5">
         <input type="number" id="brushSizeNum" min="0" max="50" value="5">
     </div>
-    <canvas id="myCanvas" width="500" height="500"></canvas><br>
+    <canvas id="myCanvas" width="500" height="500"></canvas>
 </div>
+
 <script>
 window.addEventListener('load', () => {
     const canvas = document.getElementById('myCanvas');
     const context = canvas.getContext('2d');
     const clearBtn = document.getElementById('clear');
     const colorPicker = document.getElementById('colorPicker');
+    const bgColorPicker = document.getElementById('bgColorPicker');
     const saveAsPngBtn = document.getElementById('saveAsPng');
     const saveProgressBtn = document.getElementById('saveProgress');
     const undoBtn = document.getElementById('undo');
@@ -68,14 +71,15 @@ window.addEventListener('load', () => {
     const brushSizeNum = document.getElementById('brushSizeNum');
     const history = [];
     let index = -1;
+    let bgColor = "#fff";
 
     let drawing = false;
 
-    // Resize the canvas to fit the screen
     const resizeCanvas = () => {
         canvas.width = window.innerWidth * 0.95;
         canvas.height = window.innerHeight * 0.8;
     }
+
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
@@ -84,11 +88,13 @@ window.addEventListener('load', () => {
         draw(e.clientX - canvas.offsetLeft, 
              e.clientY - canvas.offsetTop);
     });
+
     canvas.addEventListener('mousemove', (e) => {
         if (!drawing) return;
         draw(e.clientX - canvas.offsetLeft, 
              e.clientY - canvas.offsetTop);
     });
+
     canvas.addEventListener('mouseup', stop);
     canvas.addEventListener('mouseout', stop);
 
@@ -99,6 +105,7 @@ window.addEventListener('load', () => {
         draw(touch.clientX - canvas.offsetLeft, 
              touch.clientY - canvas.offsetTop);
     });
+
     canvas.addEventListener('touchmove', (e) => {
         e.preventDefault();
         if (!drawing) return;
@@ -106,6 +113,7 @@ window.addEventListener('load', () => {
         draw(touch.clientX - canvas.offsetLeft, 
              touch.clientY - canvas.offsetTop);
     });
+
     canvas.addEventListener('touchend', stop);
     canvas.addEventListener('touchcancel', stop);
 
@@ -114,18 +122,25 @@ window.addEventListener('load', () => {
             context.clearRect(0, 0, canvas.width, canvas.height);
             history.length = 0;
             index = -1;
+            localStorage.setItem('bgColor', '#ffffff');
+            canvas.style.backgroundColor = '#ffffff';
+            bgColorPicker.value = '#ffffff';
+            bgColor = "#ffffff";
         }
     });
 
     saveAsPngBtn.addEventListener('click', () => {
         const dataUrl = canvas.toDataURL('image/png');
-        const newTab = window.open();
-        newTab.document.write('<img src="' + dataUrl + '" alt="Canvas Image"/>');
+        const link = document.createElement('a');
+        link.href = dataUrl;
+        link.download = 'canvas.png';
+        link.click();
     });
 
     saveProgressBtn.addEventListener('click', () => {
         const imgData = canvas.toDataURL();
         localStorage.setItem('drawing', imgData);
+        localStorage.setItem('bgColor', bgColorPicker.value);
         alert('Your progress has been saved.');
     });
 
@@ -153,9 +168,14 @@ window.addEventListener('load', () => {
         }
     });
 
+    bgColorPicker.addEventListener('input', () => {
+        bgColor = bgColorPicker.value;
+        canvas.style.backgroundColor = bgColor;
+    });
+
     brushSize.addEventListener('input', function() {
         brushSizeNum.value = brushSize.value;
-    })
+    });
 
     brushSizeNum.addEventListener('input', function() {
         if(brushSizeNum.value > 50 || brushSizeNum.value < 0) {
@@ -185,7 +205,6 @@ window.addEventListener('load', () => {
         index++;
     }
 
-    // Load the saved drawing from local storage.
     const savedDrawing = localStorage.getItem('drawing');
     if (savedDrawing) {
         const img = new Image();
@@ -195,6 +214,16 @@ window.addEventListener('load', () => {
             history.push(savedDrawing);
             index = 0;
         };
+    }
+
+    const savedColor = localStorage.getItem('bgColor');
+    if(savedColor){
+        bgColor = savedColor;
+        bgColorPicker.value = bgColor;
+        canvas.style.backgroundColor = bgColor;
+    }else{
+        bgColor = '#ffffff';
+        canvas.style.backgroundColor = bgColor;
     }
 });
 </script>
