@@ -173,7 +173,6 @@ window.addEventListener('load', () => {
 
     backgroundColorPicker.addEventListener('change', () => {
         canvas.style.backgroundColor = backgroundColorPicker.value;
-        context.clearRect(0, 0, canvas.width, canvas.height);
         context.fillStyle = canvas.style.backgroundColor;
         context.fillRect(0, 0, canvas.width, canvas.height);
     });
