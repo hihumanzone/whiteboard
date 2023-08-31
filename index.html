@@ -1,52 +1,49 @@
 <!DOCTYPE html>
 <html>
 <head>
-<style>
-    * {
-        box-sizing: border-box;
-    }
-    body {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        max-height: 100%;
-        margin: 0;
-        font-family: Arial, sans-serif;
-        margin: 3px;
-    }        
-    #myCanvas {
-        border: 2px solid black;
-        border-radius: 8px;
-    }
-    .container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        max-width: 100vw;
-        max-height: 100vh;
-    }
-    .buttons,
-    .values {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        gap: 10px;
-        margin-bottom: 5px;
-        border: 1px solid black;
-        padding: 5px;
-        border-radius: 5px;
-    }
-    .values {
-        gap: 5px;
-    }
-    @media screen and (min-width: 600px){
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 82vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            margin: 3px;
+        }        
+        #myCanvas {
+            border: 2px solid black;
+            border-radius: 8px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 100%;
+        }
         .buttons,
         .values {
+            display: flex;
             flex-direction: row;
-            gap: 18px;
+            justify-content: center;
+            flex-wrap: wrap; 
+            gap: 10px;
+            margin-bottom: 5px;
+            border: 1px solid black;
+            padding: 5px;
+            border-radius: 5px;
         }
-    }
-</style>
+        @media screen and (min-width: 600px){
+            .buttons,
+            .values {
+                flex-direction: column;
+                gap: 18px;
+            }
+        }
+    </style>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
@@ -64,7 +61,7 @@
         Brush size: <input type="range" id="brushSize" min="0" max="50" value="5">
         <input type="number" id="brushSizeNum" min="0" max="50" value="5">        
     </div>
-    <canvas id="myCanvas" width="500" height="500"></canvas>
+    <canvas id="myCanvas" width="90vw" height="80vh"></canvas>
 </div>
 <script>
 window.addEventListener('load', () => {
