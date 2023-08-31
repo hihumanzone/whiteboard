@@ -171,12 +171,21 @@ window.addEventListener('load', () => {
         }
     });
 
-    backgroundColorPicker.addEventListener('change', () => {
-        canvas.style.backgroundColor = backgroundColorPicker.value;
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        context.fillStyle = canvas.style.backgroundColor;
-        context.fillRect(0, 0, canvas.width, canvas.height);
-    });
+backgroundColorPicker.addEventListener('change', () => {
+    canvas.style.backgroundColor = backgroundColorPicker.value;
+    const tempCanvas = document.createElement('canvas');
+    const tempContext = tempCanvas.getContext('2d');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    tempContext.drawImage(canvas, 0, 0);
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.fillStyle = canvas.style.backgroundColor;
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(tempCanvas, 0, 0);
+    const imgData = canvas.toDataURL();
+    history.push(imgData);
+    index++;
+});
 
     brushSize.addEventListener('input', function() {
         brushSizeNum.value = brushSize.value;
