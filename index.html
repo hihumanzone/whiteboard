@@ -171,25 +171,12 @@ window.addEventListener('load', () => {
         }
     });
 
-    async function bgcolor() {
-    let imgData = context.getImageData(0, 0, canvas.width, canvas.height);
-    let tempCanvas = document.createElement("canvas");
-    let tempContext = tempCanvas.getContext("2d");
-    tempCanvas.width = canvas.width;
-    tempCanvas.height = canvas.height;
-    tempContext.putImageData(imgData, 0, 0);
-    context.clearRect(0, 0, canvas.width, canvas.height);
+backgroundColorPicker.addEventListener('change', () => {
+    context.save();
+    context.globalCompositeOperation = 'destination-over';
     context.fillStyle = backgroundColorPicker.value;
     context.fillRect(0, 0, canvas.width, canvas.height);
-    let img = new Image();
-    img.src = tempCanvas.toDataURL();
-    img.onload = function() {
-        context.drawImage(img, 0, 0, canvas.width, canvas.height);
-    }
-};
-
-backgroundColorPicker.addEventListener('change', function() {
-    bgcolor();
+    context.restore();
 });
 
     brushSize.addEventListener('input', function() {
@@ -205,13 +192,8 @@ backgroundColorPicker.addEventListener('change', function() {
         }
     });
 
-    function draw(x, y) {
-    context.save();
-    context.globalCompositeOperation = 'destination-over';
-    context.fillStyle = canvas.style.backgroundColor;
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    context.restore();
-
+function draw(x, y) {
+    context.globalCompositeOperation = 'source-over';
     context.lineWidth = brushSize.value;
     context.lineCap = 'round';
     context.strokeStyle = colorPicker.value;
