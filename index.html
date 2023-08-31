@@ -13,7 +13,13 @@
             margin: 0;
             font-family: Arial, sans-serif;
             margin: 3px;
-        }        
+        }
+        .container {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+        }
         #myCanvas {
             border: 2px solid black;
             border-radius: 8px;
@@ -63,12 +69,14 @@
         Brush size: <input type="range" id="brushSize" min="0" max="50" value="5">
         <input type="number" id="brushSizeNum" min="0" max="50" value="5">        
     </div>
-    <canvas id="myCanvas" width="100vw" height="100vh"></canvas>
+    <canvas id="myCanvas"></canvas>
 </div>
 <script>
 window.addEventListener('load', () => {
     const canvas = document.getElementById('myCanvas');
     const context = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
     const clearBtn = document.getElementById('clear');
     const colorPicker = document.getElementById('colorPicker');    
     const bgColorPicker = document.getElementById('bgColorPicker');
@@ -81,6 +89,11 @@ window.addEventListener('load', () => {
     const history = [];
     let index = -1;
     let drawing = false;
+
+    window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}); 
 
     bgColorPicker.addEventListener('change', function() {
         canvas.style.backgroundColor = this.value;
