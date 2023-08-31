@@ -59,12 +59,16 @@
         <input type="number" id="brushSizeNum" min="0" max="50" value="5">
         BG Color: <input type="color" id="backgroundColorPicker" value="#ffffff">
         </div>
-    <canvas id="myCanvas" width="500" height="500" style="background-color:#ffffff;"></canvas>
+    <div id="canvas-container" style="position: relative">
+        <canvas id="bgCanvas" width="500" height="500" style="position: absolute; z-index: 0;"></canvas>
+        <canvas id="myCanvas" width="500" height="500" style="position: absolute; z-index: 1;"></canvas>
+    </div>
 </div>
 
 <script>
 window.addEventListener('load', () => {
     const canvas = document.getElementById('myCanvas');
+    const bgCanvas = document.getElementById('bgCanvas');
     const context = canvas.getContext('2d');
     const clearBtn = document.getElementById('clear');
     const colorPicker = document.getElementById('colorPicker');
@@ -172,10 +176,9 @@ window.addEventListener('load', () => {
     });
 
     backgroundColorPicker.addEventListener('change', () => {
-        const imgData = context.getImageData(0, 0, canvas.width, canvas.height);
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        canvas.style.backgroundColor = backgroundColorPicker.value;
-        context.putImageData(imgData, 0, 0);
+        bgCanvas.style.backgroundColor = backgroundColorPicker.value;
+        bgContext.fillStyle = bgCanvas.style.backgroundColor;
+        bgContext.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
     });
 
     brushSize.addEventListener('input', function() {
