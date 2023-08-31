@@ -11,7 +11,6 @@
             align-items: center;
             height: 85vh;
             margin: 0;
-            background-color: #f0f0f0;
             font-family: Arial, sans-serif;
         }
         
@@ -57,9 +56,8 @@
         Brush Color: <input type="color" id="colorPicker" value="#000000">
         Brush size: <input type="range" id="brushSize" min="0" max="50" value="5">
         <input type="number" id="brushSizeNum" min="0" max="50" value="5">
-        BG Color: <input type="color" id="backgroundColorPicker" value="#ffffff">
-        </div>
-    <canvas id="myCanvas" width="500" height="500" style="background-color:#ffffff;"></canvas>
+    </div>
+    <canvas id="myCanvas" width="500" height="500"></canvas>
 </div>
 
 <script>
@@ -68,7 +66,6 @@ window.addEventListener('load', () => {
     const context = canvas.getContext('2d');
     const clearBtn = document.getElementById('clear');
     const colorPicker = document.getElementById('colorPicker');
-    const backgroundColorPicker = document.getElementById('backgroundColorPicker');
     const saveAsPngBtn = document.getElementById('saveAsPng');
     const saveProgressBtn = document.getElementById('saveProgress');
     const undoBtn = document.getElementById('undo');
@@ -117,11 +114,9 @@ window.addEventListener('load', () => {
     clearBtn.addEventListener('click', () => {
         if (confirm('Are you sure you want to reset the drawing? This cannot be undone.')) {
             context.clearRect(0, 0, canvas.width, canvas.height);
-            canvas.style.backgroundColor = "#ffffff";
             colorPicker.value = "#000000";
             brushSize.value = "5";
             brushSizeNum.value = "5";
-            backgroundColorPicker.value = "#ffffff";
             history.length = 0;
             index = -1;
         }
@@ -137,11 +132,9 @@ window.addEventListener('load', () => {
 
     saveProgressBtn.addEventListener('click', () => {
         const imgData = canvas.toDataURL();
-        const bgColor = backgroundColorPicker.value;
         const penColor = colorPicker.value;
-        const brush_Size= brushSize.value;
+        const brush_Size = brushSize.value;
         localStorage.setItem('drawing', imgData);
-        localStorage.setItem('backgroundColor', bgColor);
         localStorage.setItem('penColor', penColor);
         localStorage.setItem('brushSize', brush_Size);
         alert('Your progress has been saved.');
@@ -171,13 +164,6 @@ window.addEventListener('load', () => {
         }
     });
 
-    backgroundColorPicker.addEventListener('change', () => {
-        context.globalCompositeOperation = 'destination-over';
-        context.fillStyle = backgroundColorPicker.value;
-        context.fillRect(0, 0, canvas.width, canvas.height);
-        context.globalCompositeOperation = 'source-over';
-    });
-
     brushSize.addEventListener('input', function() {
         brushSizeNum.value = brushSize.value;
     })
@@ -192,21 +178,15 @@ window.addEventListener('load', () => {
     });
 
     function draw(x, y) {
-    context.save();
-    context.globalCompositeOperation = 'destination-over';
-    context.fillStyle = canvas.style.backgroundColor;
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    context.restore();
+        context.lineWidth = brushSize.value;
+        context.lineCap = 'round';
+        context.strokeStyle = colorPicker.value;
 
-    context.lineWidth = brushSize.value;
-    context.lineCap = 'round';
-    context.strokeStyle = colorPicker.value;
-
-    context.lineTo(x, y);
-    context.stroke();
-    context.beginPath();
-    context.moveTo(x, y);
-}
+        context.lineTo(x, y);
+        context.stroke();
+        context.beginPath();
+        context.moveTo(x, y);
+    }
 
     function stop() {
         drawing = false;
@@ -218,17 +198,15 @@ window.addEventListener('load', () => {
 
     // Load the saved drawing from local storage.
     const savedDrawing = localStorage.getItem('drawing');
-    const savedBgColor = localStorage.getItem('backgroundColor');
     const savedPenColor = localStorage.getItem('penColor');
     const savedBrushSize = localStorage.getItem('brushSize');
+
     if(savedDrawing) {
         const img = new Image();
         img.src = savedDrawing;
-        backgroundColorPicker.value = savedBgColor;
         colorPicker.value = savedPenColor;
         brushSize.value = savedBrushSize;
         brushSizeNum.value = savedBrushSize;
-        canvas.style.backgroundColor = savedBgColor;
         img.onload = function() {
             context.clearRect(0, 0, canvas.width, canvas.height);
             context.drawImage(img, 0, 0);
