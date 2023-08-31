@@ -171,13 +171,12 @@ window.addEventListener('load', () => {
         }
     });
 
-backgroundColorPicker.addEventListener('change', () => {
-    context.save();
-    context.globalCompositeOperation = 'destination-over';
-    context.fillStyle = backgroundColorPicker.value;
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    context.restore();
-});
+    backgroundColorPicker.addEventListener('change', () => {
+        const imgData = context.getImageData(0, 0, canvas.width, canvas.height);
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        canvas.style.backgroundColor = backgroundColorPicker.value;
+        context.putImageData(imgData, 0, 0);
+    });
 
     brushSize.addEventListener('input', function() {
         brushSizeNum.value = brushSize.value;
@@ -192,8 +191,13 @@ backgroundColorPicker.addEventListener('change', () => {
         }
     });
 
-function draw(x, y) {
-    context.globalCompositeOperation = 'source-over';
+    function draw(x, y) {
+    context.save();
+    context.globalCompositeOperation = 'destination-over';
+    context.fillStyle = canvas.style.backgroundColor;
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.restore();
+
     context.lineWidth = brushSize.value;
     context.lineCap = 'round';
     context.strokeStyle = colorPicker.value;
