@@ -190,15 +190,21 @@ window.addEventListener('load', () => {
     });
 
     function draw(x, y) {
-        context.lineWidth = brushSize.value;
-        context.lineCap = 'round';
-        context.strokeStyle = colorPicker.value;
+    context.save();
+    context.globalCompositeOperation = 'destination-over';
+    context.fillStyle = canvas.style.backgroundColor;
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.restore();
 
-        context.lineTo(x, y);
-        context.stroke();
-        context.beginPath();
-        context.moveTo(x, y);
-    }
+    context.lineWidth = brushSize.value;
+    context.lineCap = 'round';
+    context.strokeStyle = colorPicker.value;
+
+    context.lineTo(x, y);
+    context.stroke();
+    context.beginPath();
+    context.moveTo(x, y);
+}
 
     function stop() {
         drawing = false;
