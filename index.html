@@ -19,16 +19,16 @@
     height: 100vh;
     margin: 0;
     padding: 0;
+            display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+    align-items: stretch;
+    overflow: hidden;
         }
         #myCanvas {
             border: 2px solid black;
             border-radius: 8px;
-        }
-        .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            max-width: 100%;
+            flex-grow: 1;
         }
         .buttons,
         .values {
@@ -94,6 +94,16 @@ window.addEventListener('load', () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 }); 
+
+    function adjustCanvasSize() {
+    const toolbarHeight = document.querySelector('.buttons').offsetHeight + document.querySelector('.values').offsetHeight;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight - toolbarHeight;
+}
+
+adjustCanvasSize();
+
+window.addEventListener('resize', adjustCanvasSize);
 
     bgColorPicker.addEventListener('change', function() {
         canvas.style.backgroundColor = this.value;
