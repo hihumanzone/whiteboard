@@ -174,7 +174,6 @@ window.addEventListener('load', () => {
     backgroundColorPicker.addEventListener('change', () => {
         canvas.style.backgroundColor = backgroundColorPicker.value;
         context.fillStyle = canvas.style.backgroundColor;
-        context.fillRect(0, 0, canvas.width, canvas.height);
     });
 
     brushSize.addEventListener('input', function() {
