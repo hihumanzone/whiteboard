@@ -1,3 +1,5 @@
+Please correct an issue currently causing half of the toolbar and value elements to be cut off on devices with a low resolution. Ensure the entire interface is fully visible on all devices, regardless of resolution.
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -27,19 +29,21 @@
         .buttons,
         .values {
             display: flex;
-            flex-direction: row;
+            flex-direction: column;
             justify-content: center;
-            flex-wrap: wrap; 
             gap: 10px;
             margin-bottom: 5px;
             border: 1px solid black;
             padding: 5px;
             border-radius: 5px;
         }
+        .values {
+            gap: 5px;
+        }
         @media screen and (min-width: 600px){
             .buttons,
             .values {
-                flex-direction: column;
+                flex-direction: row;
                 gap: 18px;
             }
         }
@@ -61,7 +65,7 @@
         Brush size: <input type="range" id="brushSize" min="0" max="50" value="5">
         <input type="number" id="brushSizeNum" min="0" max="50" value="5">        
     </div>
-    <canvas id="myCanvas" width="90vw" height="80vh"></canvas>
+    <canvas id="myCanvas" width="95vw" height="80vh"></canvas>
 </div>
 <script>
 window.addEventListener('load', () => {
@@ -79,14 +83,6 @@ window.addEventListener('load', () => {
     const history = [];
     let index = -1;
     let drawing = false;
-
-    const resizeCanvas = () => {
-        canvas.width = window.innerWidth * 0.95;
-        canvas.height = window.innerHeight * 0.8;
-    }
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-    window.addEventListener('load', loadBackground);
 
     bgColorPicker.addEventListener('change', function() {
         canvas.style.backgroundColor = this.value;
