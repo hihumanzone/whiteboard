@@ -1,51 +1,52 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 82vh;
-            margin: 0;
-            font-family: Arial, sans-serif;
-            margin: 3px;
-        }        
-        #myCanvas {
-            border: 2px solid black;
-            border-radius: 8px;
-        }
-        .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            max-width: 100%;
-        }
+<style>
+    * {
+        box-sizing: border-box;
+    }
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        max-height: 100%;
+        margin: 0;
+        font-family: Arial, sans-serif;
+        margin: 3px;
+    }        
+    #myCanvas {
+        border: 2px solid black;
+        border-radius: 8px;
+    }
+    .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        max-width: 100vw;
+        max-height: 100vh;
+    }
+    .buttons,
+    .values {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 5px;
+        border: 1px solid black;
+        padding: 5px;
+        border-radius: 5px;
+    }
+    .values {
+        gap: 5px;
+    }
+    @media screen and (min-width: 600px){
         .buttons,
         .values {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 5px;
-            border: 1px solid black;
-            padding: 5px;
-            border-radius: 5px;
+            flex-direction: row;
+            gap: 18px;
         }
-        .values {
-            gap: 5px;
-        }
-        @media screen and (min-width: 600px){
-            .buttons,
-            .values {
-                flex-direction: row;
-                gap: 18px;
-            }
-        }
-    </style>
+    }
+</style>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
