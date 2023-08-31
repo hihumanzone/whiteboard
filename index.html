@@ -135,17 +135,14 @@ window.addEventListener('load', () => {
         link.click();
     });
 
-    saveProgressBtn.addEventListener('click', () => {
-        const imgData = canvas.toDataURL();
-        const bgColor = backgroundColorPicker.value;
-        const penColor = colorPicker.value;
-        const brush_Size= brushSize.value;
-        localStorage.setItem('drawing', imgData);
-        localStorage.setItem('backgroundColor', bgColor);
-        localStorage.setItem('penColor', penColor);
-        localStorage.setItem('brushSize', brush_Size);
-        alert('Your progress has been saved.');
-    });
+saveProgressBtn.addEventListener('click', () => {
+    const imgData = canvas.toDataURL();
+    localStorage.setItem('drawing', imgData);
+    localStorage.setItem('backgroundColor', backgroundColorPicker.value);
+    localStorage.setItem('penColor', colorPicker.value);
+    localStorage.setItem('brushSize', brushSize.value);
+    alert('Your progress has been saved.');
+});
 
     undoBtn.addEventListener('click', () => {
         if(index <= 0) return;
@@ -171,21 +168,11 @@ window.addEventListener('load', () => {
         }
     });
 
-backgroundColorPicker.addEventListener('change', () => {
-    canvas.style.backgroundColor = backgroundColorPicker.value;
-    const tempCanvas = document.createElement('canvas');
-    const tempContext = tempCanvas.getContext('2d');
-    tempCanvas.width = canvas.width;
-    tempCanvas.height = canvas.height;
-    tempContext.drawImage(canvas, 0, 0);
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    context.fillStyle = canvas.style.backgroundColor;
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    context.drawImage(tempCanvas, 0, 0);
-    const imgData = canvas.toDataURL();
-    history.push(imgData);
-    index++;
-});
+    backgroundColorPicker.addEventListener('change', () => {
+        canvas.style.backgroundColor = backgroundColorPicker.value;
+        context.fillStyle = canvas.style.backgroundColor;
+        context.fillRect(0, 0, canvas.width, canvas.height);
+    });
 
     brushSize.addEventListener('input', function() {
         brushSizeNum.value = brushSize.value;
@@ -220,25 +207,25 @@ backgroundColorPicker.addEventListener('change', () => {
     }
 
     // Load the saved drawing from local storage.
-    const savedDrawing = localStorage.getItem('drawing');
-    const savedBgColor = localStorage.getItem('backgroundColor');
-    const savedPenColor = localStorage.getItem('penColor');
-    const savedBrushSize = localStorage.getItem('brushSize');
-    if(savedDrawing) {
-        const img = new Image();
-        img.src = savedDrawing;
-        backgroundColorPicker.value = savedBgColor;
-        colorPicker.value = savedPenColor;
-        brushSize.value = savedBrushSize;
-        brushSizeNum.value = savedBrushSize;
-        canvas.style.backgroundColor = savedBgColor;
-        img.onload = function() {
-            context.clearRect(0, 0, canvas.width, canvas.height);
-            context.drawImage(img, 0, 0);
-            history.push(savedDrawing);
-            index = 0;
-        };
-    }
+const savedDrawing = localStorage.getItem('drawing');
+const savedBgColor = localStorage.getItem('backgroundColor');
+const savedPenColor = localStorage.getItem('penColor');
+const savedBrushSize = localStorage.getItem('brushSize');
+if(savedDrawing) {
+    const img = new Image();
+    img.src = savedDrawing;
+    backgroundColorPicker.value = savedBgColor ? savedBgColor : '#ffffff';
+    canvas.style.backgroundColor = backgroundColorPicker.value;
+    colorPicker.value = savedPenColor ? savedPenColor : '#000000';
+    brushSize.value = savedBrushSize ? savedBrushSize : '5';
+    brushSizeNum.value = brushSize.value;
+    img.onload = function() {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(img, 0, 0);
+        history.push(savedDrawing);
+        index = 0;
+    };
+}
 });
 </script>
 </body>
