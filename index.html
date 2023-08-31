@@ -60,15 +60,12 @@
         BG Color: <input type="color" id="backgroundColorPicker" value="#ffffff">
         </div>
     <canvas id="myCanvas" width="500" height="500" style="background-color:#ffffff;"></canvas>
-    <canvas id="backgroundCanvas" style="display: none;"></canvas>
 </div>
 
 <script>
 window.addEventListener('load', () => {
     const canvas = document.getElementById('myCanvas');
-    const backgroundCanvas = document.getElementById('backgroundCanvas');
     const context = canvas.getContext('2d');
-    const backgroundContext = backgroundCanvas.getContext('2d');
     const clearBtn = document.getElementById('clear');
     const colorPicker = document.getElementById('colorPicker');
     const backgroundColorPicker = document.getElementById('backgroundColorPicker');
@@ -172,9 +169,10 @@ saveProgressBtn.addEventListener('click', () => {
     });
 
     backgroundColorPicker.addEventListener('change', () => {
-            backgroundContext.fillStyle = backgroundColorPicker.value;
-            backgroundContext.fillRect(0, 0, backgroundCanvas.width, backgroundCanvas.height);
-        });
+        canvas.style.backgroundColor = backgroundColorPicker.value;
+        context.fillStyle = canvas.style.backgroundColor;
+        context.fillRect(0, 0, canvas.width, canvas.height);
+    });
 
     brushSize.addEventListener('input', function() {
         brushSizeNum.value = brushSize.value;
@@ -228,10 +226,6 @@ if(savedDrawing) {
         index = 0;
     };
 }
-
-    window.addEventListener('load', () => {
-            backgroundCanvas.width = canvas.width;
-            backgroundCanvas.height = canvas.height;
 });
 </script>
 </body>
