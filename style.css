@@ -1,0 +1,43 @@
+body, html {
+    height: 100%;
+    margin: 0;
+    background-color: #333;
+    color: #fff;
+    font-family: Arial, sans-serif;
+}
+
+.toolbar {
+    padding: 10px;
+    background-color: #444;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+canvas {
+    display: block; /* Removes extra space below canvas */
+    background-color: #000;
+    margin: 0 auto; /* Centers the canvas horizontally */
+    touch-action: none; /* Prevents scrolling on touch devices */
+}
+
+/* Makes the controls a bit user-friendly on mobile devices */
+button, input[type="range"], input[type="color"] {
+    height: 40px;
+}
+
+input[type="color"] {
+    -webkit-appearance: none;
+    border: none;
+    width: 40px;
+    height: 40px;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch {
+    border: none;
+}
