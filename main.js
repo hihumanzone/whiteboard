@@ -41,6 +41,7 @@ document.getElementById('pencilSize').addEventListener('input', (e) => pencil.si
 const resetButton = document.getElementById('reset');
 const saveButton = document.getElementById('save');
 const pencilSizeValueDisplay = document.getElementById('pencilSizeValue');
+const fullscreenToggleButton = document.getElementById('fullscreenToggle'); // Added fullscreen button ref
 undoButton.addEventListener('click', undoLastPath);
 redoButton.addEventListener('click', redoPath);
 
@@ -239,3 +240,54 @@ toggleToolbarButton.addEventListener('click', () => {
 updateButtons(); // Initial state update
 // Initial redraw after setup
 redrawCanvas();
+
+// Fullscreen API handling
+if (fullscreenToggleButton) {
+    fullscreenToggleButton.addEventListener('click', () => {
+        if (!document.fullscreenElement &&
+            !document.mozFullScreenElement && // Firefox
+            !document.webkitFullscreenElement && // Chrome, Safari & Opera
+            !document.msFullscreenElement) { // IE/Edge
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+                });
+            } else if (document.documentElement.mozRequestFullScreen) { // Firefox
+                document.documentElement.mozRequestFullScreen();
+            } else if (document.documentElement.webkitRequestFullscreen) { // Chrome, Safari & Opera
+                document.documentElement.webkitRequestFullscreen();
+            } else if (document.documentElement.msRequestFullscreen) { // IE/Edge
+                document.documentElement.msRequestFullscreen();
+            }
+            // Button text will be updated by fullscreenchange event
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen().catch(err => {
+                    console.error(`Error attempting to disable full-screen mode: ${err.message} (${err.name})`);
+                });
+            } else if (document.mozCancelFullScreen) { // Firefox
+                document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) { // Chrome, Safari & Opera
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) { // IE/Edge
+                document.msExitFullscreen();
+            }
+            // Button text will be updated by fullscreenchange event
+        }
+    });
+
+    document.addEventListener('fullscreenchange', updateFullscreenButtonText);
+    document.addEventListener('webkitfullscreenchange', updateFullscreenButtonText); // Safari, Chrome
+    document.addEventListener('mozfullscreenchange', updateFullscreenButtonText); // Firefox
+    document.addEventListener('MSFullscreenChange', updateFullscreenButtonText); // IE/Edge
+
+    function updateFullscreenButtonText() {
+        if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) {
+            fullscreenToggleButton.textContent = 'Exit Fullscreen';
+        } else {
+            fullscreenToggleButton.textContent = 'Enter Fullscreen';
+        }
+    }
+    // Initial button text update in case page loads in fullscreen (unlikely but good practice)
+    updateFullscreenButtonText();
+}
