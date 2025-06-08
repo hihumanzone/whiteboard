@@ -1,10 +1,19 @@
 const canvas = document.getElementById('drawingCanvas');
 const ctx = canvas.getContext('2d');
+const toolbarDiv = document.querySelector('.toolbar'); // Get toolbar reference
+const toggleToolbarButton = document.getElementById('toggleToolbar'); // Get button reference
+
+// Initial toolbar state setup - Toolbar starts collapsed
+toolbarDiv.classList.add('toolbar-collapsed');
+toggleToolbarButton.textContent = "Show Toolbar";
+
 canvas.width = window.innerWidth;
-canvas.height = window.innerHeight - document.querySelector('.toolbar').offsetHeight;
+// Calculate initial canvas height based on collapsed toolbar
+canvas.height = window.innerHeight; // Toolbar is collapsed, so full height initially
 
 let drawing = false;
 let pencilEnabled = false;
+let initialClickCoords = null; // Added to store initial click coordinates
 
 const pencil = {
     color: document.getElementById('pencilColor').value,
@@ -42,9 +51,12 @@ function startDrawing(e, isTouch = false) {
 
     let clientX = isTouch ? e.touches[0].clientX : e.clientX;
     // Adjust clientY to account for the toolbar offset
-    let clientY = (isTouch ? e.touches[0].clientY : e.clientY) - document.querySelector('.toolbar').offsetHeight; 
+    let clientY = (isTouch ? e.touches[0].clientY : e.clientY) - toolbarDiv.offsetHeight;
+
+    initialClickCoords = { x: clientX, y: clientY }; // Store initial click coordinates
 
     paths.push({color: pencil.color, size: pencil.size, data: [{x: clientX, y: clientY}]});
+    redrawCanvas(); // Draw the dot immediately
 }
 
 function draw(e, isTouch = false) {
@@ -52,7 +64,17 @@ function draw(e, isTouch = false) {
 
     let clientX = isTouch ? e.touches[0].clientX : e.clientX;
     // Adjust clientY to account for the toolbar offset here as well
-    let clientY = (isTouch ? e.touches[0].clientY : e.clientY) - document.querySelector('.toolbar').offsetHeight; 
+    let clientY = (isTouch ? e.touches[0].clientY : e.clientY) - toolbarDiv.offsetHeight;
+
+    // Calculate distance from initial click
+    const dx = clientX - initialClickCoords.x;
+    const dy = clientY - initialClickCoords.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    // Only draw if moved more than 2 pixels
+    if (distance <= 2 && paths[paths.length -1].data.length === 1) { // also check if it's still the first point after the dot
+        return;
+    }
 
     let path = paths[paths.length - 1];
     path.data.push({x: clientX, y: clientY});
@@ -67,15 +89,26 @@ function redrawCanvas() {
         ctx.beginPath();
         ctx.lineWidth = path.size;
         ctx.strokeStyle = path.color;
-        path.data.forEach((point, index) => {
-            if (index === 0) {
-                ctx.moveTo(point.x, point.y);
-            } else {
-                ctx.lineTo(point.x, point.y);
-                ctx.stroke();
-            }
-        });
-        ctx.beginPath(); // Reset for next path
+        ctx.fillStyle = path.color; // For filling dots
+
+        if (path.data.length === 1) {
+            // Draw a dot
+            const point = path.data[0];
+            ctx.beginPath(); // Start a new path for the circle
+            ctx.arc(point.x, point.y, path.size / 2, 0, 2 * Math.PI);
+            ctx.fill();
+        } else {
+            // Draw a line
+            path.data.forEach((point, index) => {
+                if (index === 0) {
+                    ctx.moveTo(point.x, point.y);
+                } else {
+                    ctx.lineTo(point.x, point.y);
+                }
+            });
+            ctx.stroke(); // Stroke the path for lines
+        }
+        // ctx.beginPath(); // Reset for next path - This was causing issues with dot drawing. Moved into specific conditions.
     });
 }
 
@@ -111,10 +144,13 @@ function toggleDrawing() {
 }
 
 function resetCanvas() {
-    paths = []; // Clear the paths array
-    undonePaths = []; // Clear the undone paths
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas visually
-    updateButtons(); // Update buttons' disabled status
+    // Display a confirmation dialog
+    if (window.confirm("Are you sure you want to reset the canvas? This action cannot be undone.")) {
+        paths = []; // Clear the paths array
+        undonePaths = []; // Clear the undone paths
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas visually
+        updateButtons(); // Update buttons' disabled status
+    }
 }
 
 function saveCanvas() {
@@ -170,9 +206,36 @@ document.getElementById('pencilSize').addEventListener('input', (e) => {
 // Resize canvas and redraw paths
 window.addEventListener('resize', () => {
     canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight - document.querySelector('.toolbar').offsetHeight;
+    if (toolbarDiv.classList.contains('toolbar-collapsed')) {
+        canvas.height = window.innerHeight;
+    } else {
+        canvas.height = window.innerHeight - toolbarDiv.offsetHeight;
+    }
     redrawCanvas(); // Redraw paths after resizing
     updateButtons();
 });
 
+// Event listener for the toggle toolbar button
+toggleToolbarButton.addEventListener('click', () => {
+    toolbarDiv.classList.toggle('toolbar-collapsed');
+    if (toolbarDiv.classList.contains('toolbar-collapsed')) {
+        toggleToolbarButton.textContent = "Show Toolbar";
+        canvas.height = window.innerHeight;
+    } else {
+        toggleToolbarButton.textContent = "Hide Toolbar";
+        // Ensure toolbar has rendered to get correct offsetHeight
+        requestAnimationFrame(() => { // Wait for next frame for offsetHeight to be correct
+            canvas.height = window.innerHeight - toolbarDiv.offsetHeight;
+            redrawCanvas(); // Redraw after height adjustment
+        });
+    }
+    // For immediate collapse, redraw might need to be conditional or also in rAF
+    if (toolbarDiv.classList.contains('toolbar-collapsed')) {
+         redrawCanvas(); // Redraw immediately if collapsing
+    }
+});
+
+
 updateButtons(); // Initial state update
+// Initial redraw after setup
+redrawCanvas();
